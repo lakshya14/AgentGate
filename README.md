@@ -230,7 +230,7 @@ Then configure:
 
 AgentGate is deployed in production on **Fly.io** using a **Scale-to-Zero** architecture. 
 
-* **Webhook Endpoint:** `https://agentgate-lkt.fly.dev/webhook/github`
+* **Webhook Endpoint:** `https://agentgate.fly.dev/webhook/github`
 * **CI/CD:** Every push to `main` triggers a GitHub Actions pipeline that runs `ruff` (linting), `mypy` (type-checking), and `pytest` before automatically building and deploying the Docker container.
 * **Cost Optimization:** The Fly.io container spins down to zero after inactivity. When a GitHub webhook arrives, Fly's proxy holds the request, cold-starts the FastAPI container in ~2 seconds, processes the agent workflow, and goes back to sleep.
 
