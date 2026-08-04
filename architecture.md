@@ -65,3 +65,16 @@ This document logs significant architectural decisions and tradeoffs made during
   - When LLM APIs or GitHub rate limits fail transiently, standard Python exception handling would crash the entire graph execution.
   - LangGraph's `RetryPolicy` catches these exceptions at the framework level and suspends the node for an exponential backoff period (e.g., 2s, 4s, 8s).
   - Because it is checkpoint-aware, it resumes execution *from the exact node that failed*, rather than restarting the entire graph from the beginning. This saves substantial LLM token costs and prevents duplicate work compared to a naive `@retry` decorator on the entire workflow.
+
+## 9. CI/CD & Deployment Pipeline (GitHub Actions)
+* **Decision:** Decoupled the CI testing environment from the CD Docker build using GitHub Actions.
+* **Tradeoff / Rationale:**
+  - Tests (`ruff`, `mypy`, `pytest`) are run natively on the GitHub Ubuntu runner. We intentionally DO NOT install these testing tools inside the production Dockerfile. This keeps the final deployed Docker image slim, reduces build times, and minimizes the security attack surface.
+  - The CD pipeline acts as a strict gate: the `flyctl deploy` job will only trigger if the CI `test` job passes perfectly.
+
+## 10. Scale-to-Zero Architecture
+* **Decision:** Deployed to Fly.io with `min_machines_running = 0` to enable scale-to-zero.
+* **Tradeoff / Rationale:**
+  - Webhook-driven agents are bursty by nature. Running a 1GB Python container 24/7 wastes resources.
+  - **Cold Start vs Cost:** By scaling to zero, we pay near-$0 during idle hours. When a webhook arrives, Fly.io wakes the container in ~2-3 seconds. Because GitHub webhooks have a 10-second timeout window, a 2-second cold start is a perfectly acceptable tradeoff for massive cost savings.
+  - **Background Task Safety:** We configured the environment to ensure that the machine stays awake long enough for LangGraph's long-running asynchronous background tasks to finish execution before the machine shuts down.

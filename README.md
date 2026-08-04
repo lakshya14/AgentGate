@@ -85,6 +85,7 @@ State is persisted in Postgres via `AsyncPostgresSaver` (LangGraph checkpointer)
 | Logging | structlog |
 | HTTP Client | httpx (async) |
 | Containerisation | Docker + Docker Compose |
+| CI/CD & Deployment | GitHub Actions + Fly.io (Scale-to-Zero) |
 
 ---
 
@@ -222,6 +223,16 @@ ngrok http 8000
 Then configure:
 - **GitHub Webhook URL**: `https://<ngrok-url>/webhook/github`
 - **Discord Interactions URL**: `https://<ngrok-url>/discord/interactions`
+
+---
+
+## ☁️ Live Deployment (Fly.io)
+
+AgentGate is deployed in production on **Fly.io** using a **Scale-to-Zero** architecture. 
+
+* **Webhook Endpoint:** `https://agentgate-lkt.fly.dev/webhook/github`
+* **CI/CD:** Every push to `main` triggers a GitHub Actions pipeline that runs `ruff` (linting), `mypy` (type-checking), and `pytest` before automatically building and deploying the Docker container.
+* **Cost Optimization:** The Fly.io container spins down to zero after inactivity. When a GitHub webhook arrives, Fly's proxy holds the request, cold-starts the FastAPI container in ~2 seconds, processes the agent workflow, and goes back to sleep.
 
 ---
 
