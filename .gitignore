@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+agentgate.egg-info/
+practice.py
+venv/
+.pytest_cache/
