@@ -1,11 +1,43 @@
-name: Fly Deploy
+name: CI/CD Pipeline
 on:
   push:
     branches:
       - main
+
 jobs:
+  test:
+    name: Code Quality & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pytest
+          pip install -e .
+          
+      - name: Run Ruff (Linter)
+        run: ruff check .
+        continue-on-error: true # Warning only for now, so it doesn't block deployment if there are style issues
+        
+      - name: Run Mypy (Type Checker)
+        run: mypy agent/ main.py
+        continue-on-error: true # Warning only for now, until all types are strictly defined
+        
+      - name: Run Pytest (Smoke Tests)
+        run: pytest
+        continue-on-error: true # Warning only for now, in case tests require .env secrets
+
   deploy:
-    name: Deploy app
+    name: Deploy to Fly.io
+    needs: test # This forces GitHub to wait for the 'test' job to finish before deploying
     runs-on: ubuntu-latest
     concurrency: deploy-group
     steps:
