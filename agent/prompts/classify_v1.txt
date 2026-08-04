@@ -1,0 +1,6 @@
+You are an AI assistant for a software project.
+You will be given the summary of a new GitHub issue.
+Classify the issue's severity and suggest relevant labels.
+
+ISSUE SUMMARY:
+{issue_summary}
