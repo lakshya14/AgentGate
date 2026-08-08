@@ -4,6 +4,12 @@ An **event-driven, autonomous GitHub issue triage agent** built with LangGraph, 
 
 AgentGate listens for incoming GitHub webhook events, runs each new issue through a multi-step AI pipeline (ingest → classify → research → draft action), pauses to send a Discord approval request, then executes the approved action on GitHub.
 
+### 📸 How it works
+<div align="center">
+  <img src="./agentGateDiscord.png" alt="AgentGate Discord Interaction" width="45%" />
+  <img src="./agentgateFinal.png" alt="AgentGate Final Action" width="45%" />
+</div>
+
 ---
 
 ## Table of Contents
@@ -64,6 +70,8 @@ GitHub Webhook
 ```
 
 State is persisted in Postgres via `AsyncPostgresSaver` (LangGraph checkpointer), enabling the graph to survive server restarts between the interrupt and the human's approval.
+
+> See [architecture.md](./architecture.md) for deeper architectural decisions, data-flow details, and tradeoffs.
 
 ---
 
