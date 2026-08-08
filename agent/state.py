@@ -14,7 +14,6 @@ class AgentState(TypedDict):
     severity: Optional[str]                     # LLM-assigned severity (e.g., "low", "critical")
     # Annotated with operator.add means this list will append, not overwrite
     suggested_labels: Annotated[List[str], operator.add] # Labels the agent thinks should be applied
-    suggested_assignee: Optional[str]           # Who the agent thinks should fix it
     
     # --- Research Data ---
     related_issues: Annotated[List[Dict[str, Any]], operator.add] # Past issues found via vector similarity search

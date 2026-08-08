@@ -26,7 +26,7 @@ This document logs the significant architectural decisions and technical tradeof
 * **Tradeoff / Rationale:**
   - The alternative would be to implement a custom polling loop or store a "pending approval" record and query it on each Discord interaction — both are fragile and stateful in the application layer.
   - LangGraph's interrupt mechanism keeps all pending state inside the Postgres checkpoint. The Discord interaction handler can resume execution with a single `ainvoke(None, config={"thread_id": ...})` call, making the control flow simple and auditable.
-  - **Thread ID as correlation key:** Each GitHub event creates a unique `thread_id` (passed as the `configurable` key). The Discord button encodes this ID in its `custom_id`, so the approval is trivially matched back to the correct graph run without a lookup table.
+  - **Thread ID as correlation key:** Each GitHub event creates a unique `thread_id` (passed as the `configurable` key). The interactive Discord buttons (Approve / Reject) encode this ID in their `custom_id`, so the approval is trivially matched back to the correct graph run without a lookup table. The additional "Open Issue" link button provides immediate context to the reviewer.
 
 ## Semantic Search with pgvector
 * **Decision:** Stored issue embeddings (768-dimensional, `text-embedding-004`) in a `pgvector` column in the same Postgres database, using cosine similarity for retrieval.

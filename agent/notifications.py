@@ -1,7 +1,7 @@
 import httpx
 from config import settings
 
-async def send_approval_message(issue_summary: str, severity: str, proposed_action: str, thread_id: str):
+async def send_approval_message(issue_summary: str, severity: str, proposed_action: str, confidence: float, thread_id: str, issue_url: str):
     """
     Sends a rich embed message to Discord with Approve and Reject buttons.
     """
@@ -12,6 +12,7 @@ async def send_approval_message(issue_summary: str, severity: str, proposed_acti
             "color": 16711680, # Red
             "fields": [
                 {"name": "Severity", "value": severity, "inline": True},
+                {"name": "Confidence", "value": f"{int(confidence * 100)}%", "inline": True},
                 {"name": "Proposed Action", "value": proposed_action, "inline": False}
             ]
         }],
@@ -29,6 +30,12 @@ async def send_approval_message(issue_summary: str, severity: str, proposed_acti
                     "custom_id": f"reject_{thread_id}",
                     "label": "Reject",
                     "style": 4 # Red
+                },
+                {
+                    "type": 2,
+                    "label": "Open Issue",
+                    "style": 5, # Link button
+                    "url": issue_url
                 }
             ]
         }]

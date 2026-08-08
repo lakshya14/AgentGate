@@ -103,25 +103,7 @@ async def add_labels(repo: str, issue_number: int, labels: List[str], token: str
         
         return response.json()
 
-async def assign_issue(repo: str, issue_number: int, assignees: List[str], token: str) -> Dict[str, Any]:
-    """
-    Assign a GitHub issue to specific users.
-    Docs: https://docs.github.com/en/rest/issues/assignees#add-assignees-to-an-issue
-    """
-    url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/assignees"
-    
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
-    }
-    
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json={"assignees": assignees})
-        
-        response.raise_for_status()
-        
-        return response.json()
+
 
 async def close_issue(repo: str, issue_number: int, token: str) -> Dict[str, Any]:
     """

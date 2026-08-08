@@ -35,8 +35,8 @@ When a new issue is opened on a GitHub repository, AgentGate:
 2. **Ingests** and normalizes the issue data into a structured state.
 3. **Classifies** severity and suggests labels using a Gemini LLM.
 4. **Researches** similar past issues via a pgvector cosine-similarity search.
-5. **Drafts** a proposed action (`assign`, `close`, `wait_for_human`, etc.) with a confidence score.
-6. **Pauses** and sends an interactive Discord message with **Approve / Reject** buttons.
+5. **Drafts** a proposed action (`close`, `wait_for_human`) with a confidence score.
+6. **Pauses** and sends an interactive Discord message with **Approve / Reject / Open Issue** buttons.
 7. **Resumes** the graph after a human clicks a button and either executes the action or cancels it.
 8. **Logs** every action taken to an audit table.
 
@@ -155,10 +155,10 @@ research_node
   ▼
 draft_action_node
   Calls Gemini again with classification + research context to produce:
-    - proposed_action  (assign / close / wait_for_human / ...)
+    - proposed_action  (close / wait_for_human)
     - action_rationale
     - confidence score
-  Sends an interactive Discord message with Approve / Reject buttons.
+  Sends an interactive Discord message with Approve / Reject / Open Issue buttons.
   ─── GRAPH PAUSES HERE (interrupt_before=["execute_action"]) ───
   │
   ▼  (human clicks button → Discord router resumes graph)

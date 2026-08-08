@@ -8,7 +8,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from config import settings
 from agent.vector_store import search_similar_issues
 from agent.notifications import send_approval_message, update_approval_message
-from agent.tools import add_labels, post_comment, assign_issue, close_issue
+from agent.tools import add_labels, post_comment, close_issue
 from database import SessionLocal
 from models import AuditLog
 
@@ -34,7 +34,7 @@ class ClassificationOutput(BaseModel):
     suggested_labels: List[str] = Field(description="A list of suggested GitHub labels for this issue")
 
 class DraftActionOutput(BaseModel):
-    proposed_action: str = Field(description="The proposed action (e.g., 'assign', 'close', 'wait_for_human')")
+    proposed_action: str = Field(description="The proposed action (e.g., 'close', 'wait_for_human')")
     action_rationale: str = Field(description="Explanation of why this action was proposed")
     confidence: float = Field(description="Confidence score between 0.0 and 1.0")
 
@@ -118,13 +118,16 @@ async def draft_action_node(state: AgentState, config: RunnableConfig) -> dict:
     logger.info("node.draft_action", step="complete", action=response.proposed_action)
     
     thread_id = config.get("configurable", {}).get("thread_id", "unknown_thread")
+    issue_url = state.get("raw_payload", {}).get("issue", {}).get("html_url", "https://github.com")
     
     # Send the Discord approval message before moving to the next node
     message_id = await send_approval_message(
         issue_summary=state['issue_summary'],
         severity=state['severity'],
         proposed_action=response.proposed_action,
-        thread_id=thread_id
+        confidence=response.confidence,
+        thread_id=thread_id,
+        issue_url=issue_url
     )
     
     return {
@@ -150,7 +153,6 @@ async def execute_action_node(state: AgentState) -> dict:
     proposed_action = state.get("proposed_action", "")
     action_rationale = state.get("action_rationale", "")
     suggested_labels = state.get("suggested_labels", [])
-    suggested_assignee = state.get("suggested_assignee")
 
     raw_payload = state.get("raw_payload", {})
     repo = raw_payload.get("repository", {}).get("full_name") or settings.github_repo
@@ -200,11 +202,7 @@ async def execute_action_node(state: AgentState) -> dict:
             actions_taken.append("Posted rationale comment on GitHub issue")
 
         # Route to specific GitHub action based on proposed_action
-        if proposed_action == "assign" and suggested_assignee and repo and token:
-            await assign_issue(repo=repo, issue_number=issue_number, assignees=[suggested_assignee], token=token)
-            actions_taken.append(f"Assigned issue to {suggested_assignee}")
-
-        elif proposed_action == "close" and repo and token:
+        if proposed_action == "close" and repo and token:
             await close_issue(repo=repo, issue_number=issue_number, token=token)
             actions_taken.append("Closed GitHub issue")
 
